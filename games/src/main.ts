@@ -1,4 +1,4 @@
-import { Application, Assets, Container, Sprite, Text } from "pixi.js";
+import { Application, Assets, Container, Sprite, testImageFormat, Text } from "pixi.js";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import type { QuixxState, Player } from "../server/src/rooms/schema/QuixxState";
  
@@ -9,29 +9,45 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
 (async () => {
   // Create a new application
   const app = new Application();
+  await app.init({ background: "#1099bb", resizeTo: window });
+  document.getElementById("pixi-container")!.appendChild(app.canvas);
+  const game = new Container();
   const room: Room<QuixxState> = await client.joinOrCreate("quixx");
   const players = [];
   const $ = getStateCallbacks(room);
 
-  const text = new Text({ text: "Hello" });
+  const text = [new Text(), new Text(), new Text(), new Text()];
+  const text_loc = [
+    { x: app.screen.width * 0.5, y: app.screen.height * 0.9 },
+    { x: app.screen.width * 0.1, y: app.screen.height * 0.5 },
+    { x: app.screen.width * 0.5, y: app.screen.height * 0.1 },
+    { x: app.screen.width * 0.1, y: app.screen.height * 0.5 },
+  ]
+
+  for (let i = 0; i < text.length; i++){
+    text[i].anchor.set(0.5);
+    text[i].position.x = text_loc[i].x;
+    text[i].position.y = text_loc[i].y;
+    game.addChild(text[i]);
+  }
 
   room.onStateChange((state) => {
     console.log(state)
   })
   $(room.state).players.onAdd((player, index) => {
+    console.log(room.state.players);
     if (room.sessionId == index){
-      text.text = `Hello ${player.name}`
+      text[0].text = `${player.name} (You)`;
     }
     players.push(player);
   })
   // Initialize the application
-  await app.init({ background: "#1099bb", resizeTo: window });
 
   // Append the application canvas to the document body
-  document.getElementById("pixi-container")!.appendChild(app.canvas);
 
-  text.position.x = app.screen.width / 2;
-  text.position.y = app.screen.height / 10;
+  // text.anchor.set(0.5)
+  // text.position.x = app.screen.width / 2;
+  // text.position.y = app.screen.height / 10;
 
   // Load the dice textures
   const DICE_TEXTURES = [
@@ -53,16 +69,15 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
     new Sprite(DICE_TEXTURES[5]),
   ];
 
-  const game = new Container();
 
-  game.addChild(text);
+  // game.addChild(text);
 
   // Center the dice anchor point and position the dice
   const die_width = dice[0].width;
-  let i = 0;
+  let i = 1;
   for (const die of dice){
     die.anchor.set(0.5);
-    die.position.set(die_width + app.screen.width * (0.1 * i), app.screen.height / 2);
+    die.position.set(app.screen.width * ((1/7) * i), app.screen.height / 2);
     game.addChild(die);
     i += 1;
   }

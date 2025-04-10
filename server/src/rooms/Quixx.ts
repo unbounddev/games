@@ -24,7 +24,7 @@ export class Quixx extends Room<QuixxState> {
   }
 
   onJoin (client: Client, options: any) {
-    const players = Array.from(this.state.players.values().map(currPlayer => currPlayer.name));
+    const players = Array.from(this.state.players.values().map((currPlayer: Player) => currPlayer.name));
     console.log(this.state);
     let name;
     do {
