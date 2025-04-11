@@ -87,12 +87,12 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
 
   const die_gap = dice[0].width*0.5+5;
   const dice_pos = [
-    { x: app.screen.width * (3/8), y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * (4/8), y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * (5/8), y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * (3/8), y: app.screen.height / 2 + die_gap },
-    { x: app.screen.width * (4/8), y: app.screen.height / 2 + die_gap },
-    { x: app.screen.width * (5/8), y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * 0.5 - die_gap * 2, y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * 0.5, y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * 0.5 + die_gap * 2, y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * 0.5 - die_gap * 2, y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * 0.5, y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * 0.5 + die_gap * 2, y: app.screen.height / 2 + die_gap },
   ]
 
   // position dice and add them to game
