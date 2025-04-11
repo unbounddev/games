@@ -5,6 +5,10 @@ import type { QuixxState, Player } from "../server/src/rooms/schema/QuixxState";
 const client = new Client("http://localhost:2567");
 
 const DICE_PATH = "/assets/dice/dieWhite_border";
+const BLUE = 0x1c9fd7;
+const GREEN = 0x16bb77;
+const RED = 0xee2747;
+const YELLOW = 0xffcc00;
 
 (async () => {
   // Create a new application
@@ -147,10 +151,10 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
   })
 
   // set dice color
-  dice[2].tint = 0xff0000;
-  dice[3].tint = 0x00ff00;
-  dice[4].tint = 0x0000ff;
-  dice[5].tint = 0xffff00;
+  dice[2].tint = RED;
+  dice[3].tint = GREEN;
+  dice[4].tint = BLUE;
+  dice[5].tint = YELLOW;
   
   // draw players card
   const playerCard = new Card(app.screen.width*0.5, app.screen.height*0.5+die_width+10+32);
