@@ -1,4 +1,4 @@
-import { Application, Assets, Container, Sprite, testImageFormat, Text } from "pixi.js";
+import { Application, Assets, Container, Graphics, GraphicsContext, Sprite, testImageFormat, Text } from "pixi.js";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import type { QuixxState, Player } from "../server/src/rooms/schema/QuixxState";
  
@@ -11,6 +11,11 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
   const app = new Application();
   await app.init({ background: "#1099bb", resizeTo: window });
   document.getElementById("pixi-container")!.appendChild(app.canvas);
+  const font = await Assets.load("/assets/fonts/KenneyFuture.ttf");
+  const redSquareTexture = await Assets.load("/assets/ui/red_square.png");
+  const yellowSquareTexture = await Assets.load("/assets/ui/yellow_square.png");
+  const greenSquareTexture = await Assets.load("/assets/ui/green_square.png");
+  const blueSquareTexture = await Assets.load("/assets/ui/blue_square.png");
   const game = new Container();
   const room: Room<QuixxState> = await client.joinOrCreate("quixx");
   // const players = [];
@@ -53,6 +58,44 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
     }
   }
 
+  class Card {
+    container: Container = new Container();
+    redSquares: Sprite[] = [];
+    yellowSquares: Sprite[] = [];
+    greenSquares: Sprite[] = [];
+    blueSquares: Sprite[] = [];
+  
+    constructor(startX: number, startY: number){
+      // const squareSize = 30;
+      const squareScale = 0.6;
+      const squareSize = 64;
+      const squareGap = (squareSize*squareScale) + 10;
+      for (let i = 0; i < 12; i++){
+        const redSquare = new Sprite(redSquareTexture);
+        redSquare.scale.set(squareScale);
+        redSquare.anchor.set(0.5);
+        redSquare.position.set(startX + ((i-6)*squareGap) + (redSquare.width/2+5), startY);
+        const yellowSquare = new Sprite(yellowSquareTexture);
+        yellowSquare.scale.set(squareScale);
+        yellowSquare.anchor.set(0.5);
+        yellowSquare.position.set(startX + ((i-6)*squareGap) + (yellowSquare.width/2+5), startY+squareGap);
+        const greenSquare = new Sprite(greenSquareTexture);
+        greenSquare.scale.set(squareScale);
+        greenSquare.anchor.set(0.5);
+        greenSquare.position.set(startX + ((i-6)*squareGap) + (greenSquare.width/2+5), startY+squareGap*2);
+        const blueSquare = new Sprite(blueSquareTexture);
+        blueSquare.scale.set(squareScale);
+        blueSquare.anchor.set(0.5);
+        blueSquare.position.set(startX + ((i-6)*squareGap) + (blueSquare.width/2+5), startY+squareGap*3);
+        this.redSquares.push(redSquare);
+        this.yellowSquares.push(yellowSquare);
+        this.greenSquares.push(greenSquare);
+        this.blueSquares.push(blueSquare);
+      }
+      this.container.addChild(...this.redSquares, ...this.yellowSquares, ...this.greenSquares, ...this.blueSquares);
+    }
+  }
+
   $(room.state).players.onAdd((player, index) => {
     console.log(room.state.players);
     displayPlayers();
@@ -85,14 +128,15 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
     new Sprite(DICE_TEXTURES[5]),
   ];
 
-  const die_gap = dice[0].width*0.5+5;
+  const die_width = dice[0].width;
+  const die_gap = die_width*0.5+5;
   const dice_pos = [
-    { x: app.screen.width * 0.5 - die_gap * 2, y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * 0.5 - die_width - 10, y: app.screen.height / 2 - die_gap },
     { x: app.screen.width * 0.5, y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * 0.5 + die_gap * 2, y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * 0.5 - die_gap * 2, y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * 0.5 + die_width + 10, y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * 0.5 - die_width - 10, y: app.screen.height / 2 + die_gap },
     { x: app.screen.width * 0.5, y: app.screen.height / 2 + die_gap },
-    { x: app.screen.width * 0.5 + die_gap * 2, y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * 0.5 + die_width + 10, y: app.screen.height / 2 + die_gap },
   ]
 
   // position dice and add them to game
@@ -107,10 +151,19 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
   dice[3].tint = 0x00ff00;
   dice[4].tint = 0x0000ff;
   dice[5].tint = 0xffff00;
+  
+  // draw players card
+  const playerCard = new Card(app.screen.width*0.5, app.screen.height*0.5+die_width+10+32);
+  app.stage.addChild(playerCard.container);
 
+  // draw opponent card
+  const opponentCard = new Card(app.screen.width*0.5, app.screen.height*0.5-144-die_width-10-32);
+  app.stage.addChild(opponentCard.container);
 
   // Add the game to the stage
   app.stage.addChild(game);
+
+  
 
   // Listen for animate update
   // app.ticker.add((time) => {
