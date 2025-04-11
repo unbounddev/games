@@ -13,7 +13,7 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
   document.getElementById("pixi-container")!.appendChild(app.canvas);
   const game = new Container();
   const room: Room<QuixxState> = await client.joinOrCreate("quixx");
-  const players = [];
+  // const players = [];
   const $ = getStateCallbacks(room);
 
   const text = [new Text(), new Text(), new Text(), new Text()];
@@ -22,32 +22,48 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
     { x: app.screen.width * 0.1, y: app.screen.height * 0.5 },
     { x: app.screen.width * 0.5, y: app.screen.height * 0.1 },
     { x: app.screen.width * 0.1, y: app.screen.height * 0.5 },
-  ]
+  ];
 
   for (let i = 0; i < text.length; i++){
     text[i].anchor.set(0.5);
-    text[i].position.x = text_loc[i].x;
-    text[i].position.y = text_loc[i].y;
+    text[i].position.set(text_loc[i].x, text_loc[i].y);
     game.addChild(text[i]);
   }
 
   room.onStateChange((state) => {
     console.log(state)
   })
+
+  function displayPlayers(){
+    // get player names
+    let playerNames = room.state.players.values();
+    playerNames = Array.from(playerNames);
+    playerNames = playerNames.map(p => p.name);
+    // clear current text
+    text.forEach(t => t.text = "");
+    // display players
+    if(playerNames.length == 1){
+      text[0].text = playerNames[0];
+    } else if (playerNames.length > 1){
+      const currPlayerIndex = playerNames.indexOf(room.state.players.get(room.sessionId).name);
+      const displayOrder = [...playerNames.slice(currPlayerIndex), ...playerNames.slice(0, currPlayerIndex)];
+      displayOrder.forEach((player, index) => {
+        text[index].text = player;
+      })
+    }
+  }
+
   $(room.state).players.onAdd((player, index) => {
     console.log(room.state.players);
-    if (room.sessionId == index){
-      text[0].text = `${player.name} (You)`;
-    }
-    players.push(player);
+    displayPlayers();
+  })
+
+  $(room.state).players.onRemove((player) => {
+    displayPlayers();
   })
   // Initialize the application
 
   // Append the application canvas to the document body
-
-  // text.anchor.set(0.5)
-  // text.position.x = app.screen.width / 2;
-  // text.position.y = app.screen.height / 10;
 
   // Load the dice textures
   const DICE_TEXTURES = [
@@ -69,18 +85,22 @@ const DICE_PATH = "/assets/dice/dieWhite_border";
     new Sprite(DICE_TEXTURES[5]),
   ];
 
+  const die_gap = dice[0].width*0.5+5;
+  const dice_pos = [
+    { x: app.screen.width * (3/8), y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * (4/8), y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * (5/8), y: app.screen.height / 2 - die_gap },
+    { x: app.screen.width * (3/8), y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * (4/8), y: app.screen.height / 2 + die_gap },
+    { x: app.screen.width * (5/8), y: app.screen.height / 2 + die_gap },
+  ]
 
-  // game.addChild(text);
-
-  // Center the dice anchor point and position the dice
-  const die_width = dice[0].width;
-  let i = 1;
-  for (const die of dice){
+  // position dice and add them to game
+  dice.forEach((die, i) => {
     die.anchor.set(0.5);
-    die.position.set(app.screen.width * ((1/7) * i), app.screen.height / 2);
+    die.position.set(dice_pos[i].x, dice_pos[i].y);
     game.addChild(die);
-    i += 1;
-  }
+  })
 
   // set dice color
   dice[2].tint = 0xff0000;

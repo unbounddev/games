@@ -12,7 +12,7 @@ function generateName() {
 }
 
 export class Quixx extends Room<QuixxState> {
-  maxClients = 5;
+  maxClients = 4;
   state = new QuixxState();
 
   onCreate (options: any) {
@@ -36,6 +36,7 @@ export class Quixx extends Room<QuixxState> {
   }
 
   onLeave (client: Client, consented: boolean) {
+    this.state.players.delete(client.sessionId);
     console.log(client.sessionId, "left!");
   }
 
