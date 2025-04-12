@@ -13,9 +13,10 @@ const YELLOW = 0xffcc00;
 (async () => {
   // Create a new application
   const app = new Application();
+  // Initialize the application
   await app.init({ background: "#1099bb", resizeTo: window });
+  // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);
-  const font = await Assets.load("/assets/fonts/KenneyFuture.ttf");
   const redSquareTexture = await Assets.load("/assets/ui/red_square.png");
   const yellowSquareTexture = await Assets.load("/assets/ui/yellow_square.png");
   const greenSquareTexture = await Assets.load("/assets/ui/green_square.png");
@@ -64,37 +65,52 @@ const YELLOW = 0xffcc00;
 
   class Card {
     container: Container = new Container();
-    redSquares: Sprite[] = [];
-    yellowSquares: Sprite[] = [];
-    greenSquares: Sprite[] = [];
-    blueSquares: Sprite[] = [];
+    redSquares: Container[] = [];
+    yellowSquares: Container[] = [];
+    greenSquares: Container[] = [];
+    blueSquares: Container[] = [];
   
     constructor(startX: number, startY: number){
-      // const squareSize = 30;
       const squareScale = 0.6;
       const squareSize = 64;
       const squareGap = (squareSize*squareScale) + 10;
       for (let i = 0; i < 12; i++){
+        const redContainer = new Container();
         const redSquare = new Sprite(redSquareTexture);
+        const redNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        redContainer.position.set(startX + ((i-6)*squareGap) + (redSquare.width/2+5), startY);
+        redNumberText.anchor.set(0.5);
         redSquare.scale.set(squareScale);
         redSquare.anchor.set(0.5);
-        redSquare.position.set(startX + ((i-6)*squareGap) + (redSquare.width/2+5), startY);
+        redContainer.addChild(redSquare, redNumberText);
+        const yellowContainer = new Container();
         const yellowSquare = new Sprite(yellowSquareTexture);
+        const yellowNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        yellowContainer.position.set(startX + ((i-6)*squareGap) + (yellowSquare.width/2+5), startY+squareGap);
+        yellowNumberText.anchor.set(0.5);
         yellowSquare.scale.set(squareScale);
         yellowSquare.anchor.set(0.5);
-        yellowSquare.position.set(startX + ((i-6)*squareGap) + (yellowSquare.width/2+5), startY+squareGap);
+        yellowContainer.addChild(yellowSquare, yellowNumberText);
+        const greenContainer = new Container();
         const greenSquare = new Sprite(greenSquareTexture);
+        const greenNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        greenContainer.position.set(startX + ((i-6)*squareGap) + (greenSquare.width/2+5), startY+squareGap*2);
+        greenNumberText.anchor.set(0.5);
         greenSquare.scale.set(squareScale);
         greenSquare.anchor.set(0.5);
-        greenSquare.position.set(startX + ((i-6)*squareGap) + (greenSquare.width/2+5), startY+squareGap*2);
+        greenContainer.addChild(greenSquare, greenNumberText);
+        const blueContainer = new Container();
         const blueSquare = new Sprite(blueSquareTexture);
+        const blueNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        blueContainer.position.set(startX + ((i-6)*squareGap) + (blueSquare.width/2+5), startY+squareGap*3);
+        blueNumberText.anchor.set(0.5);
         blueSquare.scale.set(squareScale);
         blueSquare.anchor.set(0.5);
-        blueSquare.position.set(startX + ((i-6)*squareGap) + (blueSquare.width/2+5), startY+squareGap*3);
-        this.redSquares.push(redSquare);
-        this.yellowSquares.push(yellowSquare);
-        this.greenSquares.push(greenSquare);
-        this.blueSquares.push(blueSquare);
+        blueContainer.addChild(blueSquare, blueNumberText);
+        this.redSquares.push(redContainer);
+        this.yellowSquares.push(yellowContainer);
+        this.greenSquares.push(greenContainer);
+        this.blueSquares.push(blueContainer);
       }
       this.container.addChild(...this.redSquares, ...this.yellowSquares, ...this.greenSquares, ...this.blueSquares);
     }
@@ -108,9 +124,6 @@ const YELLOW = 0xffcc00;
   $(room.state).players.onRemove((player) => {
     displayPlayers();
   })
-  // Initialize the application
-
-  // Append the application canvas to the document body
 
   // Load the dice textures
   const DICE_TEXTURES = [
