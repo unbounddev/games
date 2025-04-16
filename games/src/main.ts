@@ -1,4 +1,4 @@
-import { Application, Assets, Container, Graphics, GraphicsContext, Sprite, testImageFormat, Text } from "pixi.js";
+import { Application, Assets, Container, Graphics, GraphicsContext, Sprite, testImageFormat, Text, TextStyleOptions, Texture } from "pixi.js";
 import { Client, getStateCallbacks, Room } from "colyseus.js";
 import type { QuixxState, Player } from "../server/src/rooms/schema/QuixxState";
  
@@ -9,34 +9,58 @@ const BLUE = 0x1c9fd7;
 const GREEN = 0x16bb77;
 const RED = 0xee2747;
 const YELLOW = 0xffcc00;
+const BACKGROUND = 0x1099bb;
+const CONFIG = {
+  WIDTH: 1920,
+  HEIGHT: 1080
+};
 
 (async () => {
+  
   // Create a new application
   const app = new Application();
   // Initialize the application
-  await app.init({ background: "#1099bb", resizeTo: window });
+  await app.init({ 
+    background: BACKGROUND, 
+    resizeTo: window,
+    autoDensity: true
+  });
   // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);
+  document.documentElement.requestFullscreen()
   const redSquareTexture = await Assets.load("/assets/ui/red_square.png");
   const yellowSquareTexture = await Assets.load("/assets/ui/yellow_square.png");
   const greenSquareTexture = await Assets.load("/assets/ui/green_square.png");
   const blueSquareTexture = await Assets.load("/assets/ui/blue_square.png");
   const game = new Container();
+  game.width = CONFIG.WIDTH;
+  game.height = CONFIG.HEIGHT;
+  game.scale.x = actualWidth() / CONFIG.WIDTH;
+  game.scale.y = actualHeight() / CONFIG.HEIGHT;
+  game.x = app.screen.width / 2 - actualWidth() / 2;
+  game.y = app.screen.height / 2 - actualHeight() / 2;
+  // const bg = new Sprite(Texture.WHITE);
+  // bg.width = CONFIG.WIDTH;
+  // bg.height = CONFIG.HEIGHT;
+  // bg.tint = BACKGROUND;
+  // Add the game to the stage
+  app.stage.addChild(game);
+  // game.addChild(bg);
   const room: Room<QuixxState> = await client.joinOrCreate("quixx");
   // const players = [];
   const $ = getStateCallbacks(room);
 
   const text = [new Text(), new Text(), new Text(), new Text()];
   const text_loc = [
-    { x: app.screen.width * 0.5, y: app.screen.height * 0.9 },
-    { x: app.screen.width * 0.1, y: app.screen.height * 0.5 },
-    { x: app.screen.width * 0.5, y: app.screen.height * 0.1 },
-    { x: app.screen.width * 0.1, y: app.screen.height * 0.5 },
+    { x: () => CONFIG.WIDTH * 0.5, y: CONFIG.HEIGHT - 50 },
+    { x: (text: Text) => text.width / 2 + 30 , y: CONFIG.HEIGHT / 2 },
+    { x: () => CONFIG.WIDTH * 0.5, y: 50 },
+    { x: (text: Text) => CONFIG.WIDTH - text.width / 2 - 30, y: CONFIG.HEIGHT * 0.5 },
   ];
 
   for (let i = 0; i < text.length; i++){
     text[i].anchor.set(0.5);
-    text[i].position.set(text_loc[i].x, text_loc[i].y);
+    text[i].position.set(text_loc[i].x(text[i]), text_loc[i].y);
     game.addChild(text[i]);
   }
 
@@ -59,6 +83,7 @@ const YELLOW = 0xffcc00;
       const displayOrder = [...playerNames.slice(currPlayerIndex), ...playerNames.slice(0, currPlayerIndex)];
       displayOrder.forEach((player, index) => {
         text[index].text = player;
+        text[index].position.set(text_loc[index].x(text[index]), text_loc[index].y)
       })
     }
   }
@@ -71,40 +96,40 @@ const YELLOW = 0xffcc00;
     blueSquares: Container[] = [];
   
     constructor(startX: number, startY: number){
-      const squareScale = 0.6;
       const squareSize = 64;
-      const squareGap = (squareSize*squareScale) + 10;
+      const squareGap = squareSize + 10;
+      const fontStyle: Partial<TextStyleOptions> = {
+        fontWeight: "bold", 
+        fontSize: 36
+      };
+
       for (let i = 0; i < 12; i++){
         const redContainer = new Container();
         const redSquare = new Sprite(redSquareTexture);
-        const redNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        const redNumberText = new Text({ text: `${i+1}`, style: fontStyle });
         redContainer.position.set(startX + ((i-6)*squareGap) + (redSquare.width/2+5), startY);
         redNumberText.anchor.set(0.5);
-        redSquare.scale.set(squareScale);
         redSquare.anchor.set(0.5);
         redContainer.addChild(redSquare, redNumberText);
         const yellowContainer = new Container();
         const yellowSquare = new Sprite(yellowSquareTexture);
-        const yellowNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        const yellowNumberText = new Text({ text: `${i+1}`, style: fontStyle });
         yellowContainer.position.set(startX + ((i-6)*squareGap) + (yellowSquare.width/2+5), startY+squareGap);
         yellowNumberText.anchor.set(0.5);
-        yellowSquare.scale.set(squareScale);
         yellowSquare.anchor.set(0.5);
         yellowContainer.addChild(yellowSquare, yellowNumberText);
         const greenContainer = new Container();
         const greenSquare = new Sprite(greenSquareTexture);
-        const greenNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        const greenNumberText = new Text({ text: `${i+1}`, style: fontStyle });
         greenContainer.position.set(startX + ((i-6)*squareGap) + (greenSquare.width/2+5), startY+squareGap*2);
         greenNumberText.anchor.set(0.5);
-        greenSquare.scale.set(squareScale);
         greenSquare.anchor.set(0.5);
         greenContainer.addChild(greenSquare, greenNumberText);
         const blueContainer = new Container();
         const blueSquare = new Sprite(blueSquareTexture);
-        const blueNumberText = new Text({ text: `${i+1}`, style: { fontWeight: "bold" } });
+        const blueNumberText = new Text({ text: `${i+1}`, style: fontStyle });
         blueContainer.position.set(startX + ((i-6)*squareGap) + (blueSquare.width/2+5), startY+squareGap*3);
         blueNumberText.anchor.set(0.5);
-        blueSquare.scale.set(squareScale);
         blueSquare.anchor.set(0.5);
         blueContainer.addChild(blueSquare, blueNumberText);
         this.redSquares.push(redContainer);
@@ -114,6 +139,18 @@ const YELLOW = 0xffcc00;
       }
       this.container.addChild(...this.redSquares, ...this.yellowSquares, ...this.greenSquares, ...this.blueSquares);
     }
+  }
+
+  function actualWidth() {
+    const { width, height } = app.screen;
+    const isWidthConstrained = width < height * 16 / 9;
+    return isWidthConstrained ? width : height * 16 / 9;
+  }
+
+  function actualHeight() {
+    const { width, height } = app.screen;
+    const isHeightConstrained = height < width * 9 / 16;
+    return isHeightConstrained ? height : width * 9 / 16;
   }
 
   $(room.state).players.onAdd((player, index) => {
@@ -148,12 +185,12 @@ const YELLOW = 0xffcc00;
   const die_width = dice[0].width;
   const die_gap = die_width*0.5+5;
   const dice_pos = [
-    { x: app.screen.width * 0.5 - die_width - 10, y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * 0.5, y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * 0.5 + die_width + 10, y: app.screen.height / 2 - die_gap },
-    { x: app.screen.width * 0.5 - die_width - 10, y: app.screen.height / 2 + die_gap },
-    { x: app.screen.width * 0.5, y: app.screen.height / 2 + die_gap },
-    { x: app.screen.width * 0.5 + die_width + 10, y: app.screen.height / 2 + die_gap },
+    { x: CONFIG.WIDTH * 0.5 - die_width - 10, y: CONFIG.HEIGHT / 2 - die_gap },
+    { x: CONFIG.WIDTH * 0.5, y: CONFIG.HEIGHT / 2 - die_gap },
+    { x: CONFIG.WIDTH * 0.5 + die_width + 10, y: CONFIG.HEIGHT / 2 - die_gap },
+    { x: CONFIG.WIDTH * 0.5 - die_width - 10, y: CONFIG.HEIGHT / 2 + die_gap },
+    { x: CONFIG.WIDTH * 0.5, y: CONFIG.HEIGHT / 2 + die_gap },
+    { x: CONFIG.WIDTH * 0.5 + die_width + 10, y: CONFIG.HEIGHT / 2 + die_gap },
   ]
 
   // position dice and add them to game
@@ -170,15 +207,13 @@ const YELLOW = 0xffcc00;
   dice[5].tint = YELLOW;
   
   // draw players card
-  const playerCard = new Card(app.screen.width*0.5, app.screen.height*0.5+die_width+10+32);
-  app.stage.addChild(playerCard.container);
+  const playerCard = new Card(CONFIG.WIDTH*0.5, CONFIG.HEIGHT*0.5+die_width+10+64);
+  game.addChild(playerCard.container);
 
   // draw opponent card
-  const opponentCard = new Card(app.screen.width*0.5, app.screen.height*0.5-144-die_width-10-32);
-  app.stage.addChild(opponentCard.container);
+  const opponentCard = new Card(CONFIG.WIDTH*0.5, CONFIG.HEIGHT*0.5-256-die_width-48);
+  game.addChild(opponentCard.container);
 
-  // Add the game to the stage
-  app.stage.addChild(game);
 
   
 
