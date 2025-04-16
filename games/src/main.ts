@@ -32,6 +32,7 @@ const CONFIG = {
   const yellowSquareTexture = await Assets.load("/assets/ui/yellow_square.png");
   const greenSquareTexture = await Assets.load("/assets/ui/green_square.png");
   const blueSquareTexture = await Assets.load("/assets/ui/blue_square.png");
+  const buttonTexture = await Assets.load("/assets/ui/button.png");
   const game = new Container();
   game.width = CONFIG.WIDTH;
   game.height = CONFIG.HEIGHT;
@@ -63,6 +64,19 @@ const CONFIG = {
     text[i].position.set(text_loc[i].x(text[i]), text_loc[i].y);
     game.addChild(text[i]);
   }
+
+  const button = new Sprite(buttonTexture);
+  button.position.set(CONFIG.WIDTH * 0.9, CONFIG.HEIGHT * 0.9);
+  button.scale.set(1.5);
+  button.anchor.set(0.5);
+  game.addChild(button);
+  button.on('pointerdown', (event) => { alert('Roll!'); });
+  button.eventMode = 'static';
+
+  const rollText = new Text({ text: 'Roll', style: { fontWeight: 'bold', fontSize: 48, fill: GREEN }});
+  rollText.position.set(CONFIG.WIDTH * 0.9, CONFIG.HEIGHT * 0.9);
+  rollText.anchor.set(0.5);
+  game.addChild(rollText);
 
   room.onStateChange((state) => {
     console.log(state)
