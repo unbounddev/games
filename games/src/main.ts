@@ -27,7 +27,6 @@ const CONFIG = {
   });
   // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);
-  document.documentElement.requestFullscreen()
   const redSquareTexture = await Assets.load("/assets/ui/red_square.png");
   const yellowSquareTexture = await Assets.load("/assets/ui/yellow_square.png");
   const greenSquareTexture = await Assets.load("/assets/ui/green_square.png");
@@ -87,17 +86,28 @@ const CONFIG = {
     let playerNames = room.state.players.values();
     playerNames = Array.from(playerNames);
     playerNames = playerNames.map(p => p.name);
+    const currPlayer = room.state.players.get(room.state.currPlayer);
     // clear current text
     text.forEach(t => t.text = "");
     // display players
     if(playerNames.length == 1){
       text[0].text = playerNames[0];
+      if (playerNames[0] == currPlayer.name){
+        text[0].style.fill = 0xffff00;
+      } else {
+        text[0].style.fill = 0x000000;
+      }
     } else if (playerNames.length > 1){
       const currPlayerIndex = playerNames.indexOf(room.state.players.get(room.sessionId).name);
       const displayOrder = [...playerNames.slice(currPlayerIndex), ...playerNames.slice(0, currPlayerIndex)];
       displayOrder.forEach((player, index) => {
         text[index].text = player;
-        text[index].position.set(text_loc[index].x(text[index]), text_loc[index].y)
+        text[index].position.set(text_loc[index].x(text[index]), text_loc[index].y);
+        if (player == currPlayer.name){
+          text[index].style.fill = 0xffff00;
+        } else {
+          text[index].style.fill = 0x000000;
+        }
       })
     }
   }
@@ -168,7 +178,7 @@ const CONFIG = {
   }
 
   $(room.state).players.onAdd((player, index) => {
-    console.log(room.state.players);
+    // console.log(room.state.players);
     displayPlayers();
   })
 
@@ -216,9 +226,9 @@ const CONFIG = {
 
   // set dice color
   dice[2].tint = RED;
-  dice[3].tint = GREEN;
-  dice[4].tint = BLUE;
-  dice[5].tint = YELLOW;
+  dice[3].tint = YELLOW;
+  dice[4].tint = GREEN;
+  dice[5].tint = BLUE;
   
   // draw players card
   const playerCard = new Card(CONFIG.WIDTH*0.5, CONFIG.HEIGHT*0.5+die_width+10+64);

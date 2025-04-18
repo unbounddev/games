@@ -18,7 +18,12 @@ export class Player extends Schema {
 }
 
 export class QuixxState extends Schema {
-
+  @type("string") currPlayer: string = "";
+  @type("number") white1: number = 1;
+  @type("number") white2: number = 2;
+  @type("number") red: number = 3;
+  @type("number") yellow: number = 4;
+  @type("number") green: number = 5;
+  @type("number") blue: number = 6;
   @type({ map: Player }) players = new MapSchema<Player>();
-
 }

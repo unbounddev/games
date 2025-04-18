@@ -31,12 +31,21 @@ export class Quixx extends Room<QuixxState> {
       name = generateName();
     } while (players.includes(name));
     const player = new Player(name);
+    if (!this.state.currPlayer){
+      this.state.currPlayer = client.sessionId;
+    }
     this.state.players.set(client.sessionId, player);
     console.log(client.sessionId, `${player.name} joined!`);
   }
 
   onLeave (client: Client, consented: boolean) {
     this.state.players.delete(client.sessionId);
+    // TODO: Fix logic to select player that would have been after current player
+    if (this.state.currPlayer == client.sessionId){
+      const players: MapIterator<string> = this.state.players.keys();
+      const newCurrPlayer = players.next();
+      this.state.currPlayer = newCurrPlayer.value ? newCurrPlayer.value : "";
+    }
     console.log(client.sessionId, "left!");
   }
 
